@@ -138,3 +138,74 @@ LEFT JOIN shippers s
 JOIN order_statuses os
 	ON o.status = os.order_status_id
 ```
+### the USING Clause
+```dtd
+USE sql_invoicing;
+SELECT 
+	p.date,
+    c.name AS client,
+    p.amount,
+    pm.name AS payment_method
+FROM payments p
+JOIN clients c
+	USING (client_id)
+JOIN payment_methods pm
+	ON p.payment_method = pm.payment_method_id
+```
+USING (column name): the column must exit in both tables with same name.
+### Natural Joins
+It isn't recommend.
+### Cross Joins
+```dtd
+-- implicit syntax
+        USE sql_store;
+        SELECT
+        sh.name AS shipper,
+        p.name AS product
+        FROM shippers sh, products p
+        ORDER BY sh.name
+```
+```dtd
+-- explicit syntax
+        USE sql_store;
+        SELECT
+        sh.name AS shipper,
+        p.name AS product
+        FROM shippers sh
+        CROSS JOIN products p
+        ORDER BY sh.name
+
+```
+### Unions
+the number of column each query returned should equal.
+the name of column based on the first query.
+```dtd
+USE sql_store;
+SELECT 
+	customer_id,
+	first_name,
+    points,
+    'Bronze' AS type
+    
+FROM customers c
+WHERE points < '2000'
+UNION
+SELECT 
+	c.customer_id,
+	c.first_name,
+    points,
+    'Silver' AS type
+    
+FROM customers c
+WHERE points BETWEEN 2000 AND 3000
+UNION
+SELECT 
+	c.customer_id,
+	c.first_name,
+    points,
+    'Gold' AS type
+FROM customers c
+WHERE points > '3000'
+ORDER BY first_name
+
+```
