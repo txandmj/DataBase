@@ -209,3 +209,198 @@ WHERE points > '3000'
 ORDER BY first_name
 
 ```
+## Column Attributes
+### Inserting a Row
+```
+USE sql_store;
+INSERT INTO customers (
+	-- customer_id,
+    first_name,
+    last_name,
+    birth_date,
+    address,
+    city,
+    state)
+VALUE (
+	-- DEFAULT,
+    'Jon',
+    'Cogen',
+    '1990-02-22',
+    'Address',
+    'LA',
+    'CA')
+```
+You can omit the rows you want to use default values.
+### Inserting multiple rows
+```
+USE sql_store;
+INSERT INTO products (name, quantity_in_stock, unit_price)
+VALUE ('Product1', 10, 1.95),
+	  ('Product2', 11, 1.95),
+      ('Product3', 12, 1.95)
+```
+### Inserting Hierarchical Rows
+```
+USE sql_store;
+INSERT INTO orders(customer_id, order_date, status)
+VALUE (1, '2019-02-02', 1);
+
+INSERT INTO order_items
+VALUES
+	(LAST_INSERT_ID(), 1, 1, 2.95),
+    (LAST_INSERT_ID(), 2, 1, 3.95)
+```
+### Creating a copy of a table
+```
+-- show client_name column
+-- select clients who had payments
+USE sql_invoicing;
+CREATE TABLE invoices_archived AS
+SELECT 
+	i.invoice_id,
+    i.number,
+    c.name as client,
+    i.invoice_total,
+    i.payment_total,
+    i.invoice_date,
+    i.payment_date,
+    i.due_date
+FROM invoices i
+JOIN clients c
+	USING (client_id)
+WHERE payment_date IS NOT NULL
+```
+NOTE: In the achived table, PK(primary key) and AI(automatic increment) 
+are not selected.
+### Updating a Single Row
+```
+USE sql_invoicing;
+UPDATE invoices
+SET 
+	payment_total = invoice_total * 0.5,
+	payment_date = due_date
+WHERE invoice_id = 3
+```
+### Updating  multiple rows
+```
+USE sql_store;
+UPDATE customers
+SET points = points + 50
+WHERE birth_date < '1990-01-01'
+```
+### Using Subqueries
+NOTE: Execute the subqueries before executing the whole queries
+```
+USE sql_invoicing;
+UPDATE invoices
+SET 
+	payment_total = invoice_total * 0.5,
+    payment_date = due_date
+WHERE client_id IN 
+	(SELECT client_id
+	 FROM clients
+	 WHERE state IN ('CA', 'NY'))
+```
+```
+USE sql_store;
+UPDATE orders
+SET comments = 'golden customer'
+WHERE customer_id IN 
+	(SELECT customer_id
+	 FROM customers
+	 WHERE points > 3000)
+```
+### Deleting Rows
+```
+DELETE FROM invoices
+WHERE client_id = (
+  SELECT *
+  FROM clients
+  WHERE name = 'Myworks'
+)
+```
+### Restoring the Database
+File -> Open SQL script -> restore file name -> execute -> 
+back to navigator panel -> refresh
+## Aggregate Functions
+```
+USE sql_invoicing;
+SELECT
+	MAX(invoice_total) AS hightest,
+    MIN(invoice_total) AS lowest,
+    AVG(invoice_total) AS average,
+    SUM(invoice_total * 1.1) AS total,
+    COUNT(invoice_total) AS number_of_invoices,
+    COUNT(payment_date) AS count_of_payments,
+    COUNT(DISTINCT client_id) AS total_records
+FROM invoices
+WHERE invoice_date > '2019-01-01'
+```
+- COUNT(payment_date): return all non-null elements
+- COUNT(*): return non-null and null elements
+- COUNT(**DISTINCT** client_id): return unique elements.
+```
+  SELECT
+	'First half of 2019' AS date_range,
+    SUM(invoice_total) AS total_sales,
+    SUM(payment_total) AS total_payments,
+    SUM(invoice_total - payment_total) AS what_we_expect
+FROM invoices
+WHERE invoice_date between '2019-01-01' AND '2019-06-30'
+UNION
+SELECT
+'Second half of 2019' AS date_range,
+SUM(invoice_total) AS total_sales,
+SUM(payment_total) AS total_payments,
+SUM(invoice_total - payment_total) AS what_we_expect
+FROM invoices
+WHERE invoice_date between '2019-07-01' AND '2019-12-31'
+UNION
+SELECT
+'Total' AS date_range,
+SUM(invoice_total) AS total_sales,
+SUM(payment_total) AS total_payments,
+SUM(invoice_total - payment_total) AS what_we_expect
+FROM invoices
+WHERE invoice_date between '2019-01-01' AND '2019-12-31'
+```
+### GROUP BY
+Remember the order: SELECT - FROM - WHERE - GROUP BY - ORDER BY
+```
+USE sql_invoicing;
+SELECT
+	date,
+    pm.name AS payment_method,
+    SUM(amount) AS total_payments
+FROM payments p
+JOIN payment_methods pm
+	ON p.payment_method = pm.payment_method_id
+GROUP BY date, payment_method
+ORDER BY date
+```
+NOTE:
+first, group by date
+second, join pm, group by payment_method
+### The HAVING Clause
+The differences between WHERE and HAVING:
+- WHERE Clause fitler data before GROUP BY
+- HAVING Clause filter data after GROUP BY
+- WHERE allow to filter conditions that don't show in SELECT Clause
+- HAVING only filter conditions that show in SELECT Clause
+```
+USE sql_store;
+SELECT 
+	c.customer_id,
+    c.first_name,
+    c.last_name,
+    SUM(oi.quantity * oi.unit_price) AS total_sales
+FROM customers c
+JOIN orders o USING (customer_id)
+JOIN order_items oi USING (order_id)
+WHERE state = 'VA'
+GROUP BY 
+	c.customer_id,
+    c.first_name,
+    c.last_name
+HAVING total_sales > 100
+```
