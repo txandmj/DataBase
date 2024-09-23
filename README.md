@@ -404,3 +404,81 @@ GROUP BY
     c.last_name
 HAVING total_sales > 100
 ```
+### the ROLLUP Operator
+Add the summary row at the end of table
+```dtd
+SELECT 
+	pm.name AS payment_method,
+    SUM(amount) AS total
+FROM payments p
+JOIN payment_methods pm
+	ON p.payment_method = pm.payment_method_id
+GROUP BY pm.name WITH ROLLUP
+```
+### the IN operator
+```dtd
+SELECT *
+FROM clients
+WHERE client_id NOT IN (
+	SELECT DISTINCT client_id
+	FROM invoices
+	JOIN clients USING (client_id)
+)
+```
+- find customers who have ordered lettuce (id = 30)
+```dtd
+SELECT
+    DISTINCT customer_id,
+    first_name,
+    last_name
+FROM customers c
+JOIN orders o USING (customer_id)
+JOIN order_items oi USING (order_id)
+WHERE oi.product_id = 3
+```
+### the ALL keyword
+-select invoices larger than all invoices of client 3
+method 1: MAX function
+```dtd
+SELECT *
+FROM invoices
+WHERE invoice_total > (
+	SELECT MAX(invoice_total)
+    FROM invoices
+    WHERE client_id = 3
+)
+```
+Method 2: ALL keyword
+```dtd
+SELECT *
+FROM invoices
+WHERE invoice_total > ALL (
+	SELECT invoice_total
+    FROM invoices
+    WHERE client_id = 3
+)
+```
+### the ANY keyword
+-select clients with at least two invoices
+Method 1: Using IN
+```dtd
+SELECT *
+FROM clients
+WHERE client_id IN (
+	SELECT client_id
+	FROM invoices
+	GROUP BY client_id
+	HAVING COUNT(*) >= 2
+)
+```
+Method 2: = ANY
+```dtd
+SELECT *
+FROM clients
+WHERE client_id = ANY (
+	SELECT client_id
+	FROM invoices
+	GROUP BY client_id
+	HAVING COUNT(*) >= 2
+)
+```
