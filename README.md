@@ -481,4 +481,59 @@ WHERE client_id = ANY (
 	GROUP BY client_id
 	HAVING COUNT(*) >= 2
 )
+``` 
+### Correlated Subqueries
+```dtd
+-- get invoices that are larger than the client's average invoice amount
+SELECT *
+FROM invoices i
+WHERE invoice_total > (
+	SELECT AVG(invoice_total)
+	FROM invoices
+	WHERE client_id = i.client_id
+)
+ORDER BY client_id
 ```
+### the EXISTS operator
+method 1: NOT IN
+```dtd
+ -- find the products that have never been ordered
+        SELECT
+        product_id,
+        name
+        FROM products
+        WHERE product_id NOT IN (
+        SELECT product_id
+        FROM  order_items
+        )
+
+```
+method 2: NOT EXISTS
+```dtd
+-- find the products that have never been ordered
+SELECT
+	product_id,
+    name
+FROM products p
+WHERE NOT EXISTS (
+	SELECT product_id
+    FROM  order_items
+    WHERE p.product_id = product_id
+)
+```
+### Subqueries in SELECT
+```dtd
+SELECT 
+	client_id,
+    name,
+    (SELECT SUM(invoice_total)
+		FROM invoices
+        WHERE client_id = c.client_id) AS total_sales,
+	(SELECT AVG(invoice_total) FROM invoices) AS average,
+    (SELECT total_sales - average)    
+FROM clients c
+```
+NOTE: expression doesn't allow use column alias
+### Subqueries in FROM
+The method of Subqueries in FROM only used for simple queries.
+Because this method make main query complicate.
