@@ -503,8 +503,8 @@ method 1: NOT IN
         name
         FROM products
         WHERE product_id NOT IN (
-        SELECT product_id
-        FROM  order_items
+          SELECT product_id
+          FROM  order_items
         )
 
 ```
@@ -512,25 +512,25 @@ method 2: NOT EXISTS
 ```dtd
 -- find the products that have never been ordered
 SELECT
-	product_id,
-    name
+      product_id,
+      name
 FROM products p
 WHERE NOT EXISTS (
-	SELECT product_id
-    FROM  order_items
-    WHERE p.product_id = product_id
+      SELECT product_id
+      FROM  order_items
+      WHERE p.product_id = product_id
 )
 ```
 ### Subqueries in SELECT
 ```dtd
 SELECT 
-	client_id,
-    name,
-    (SELECT SUM(invoice_total)
-		FROM invoices
-        WHERE client_id = c.client_id) AS total_sales,
-	(SELECT AVG(invoice_total) FROM invoices) AS average,
-    (SELECT total_sales - average)    
+      client_id,
+      name,
+      (SELECT SUM(invoice_total)
+          FROM invoices
+          WHERE client_id = c.client_id) AS total_sales,
+      (SELECT AVG(invoice_total) FROM invoices) AS average,
+      (SELECT total_sales - average)    
 FROM clients c
 ```
 NOTE: expression doesn't allow use column alias
@@ -565,8 +565,8 @@ SELECT LOWER('SKY')
 RETURN int type
 ```dtd
 SELECT NOW(), CURDATE(), CURTIME(), 
-	YEAR(NOW()),MONTH(NOW()), DAY(NOW()),
-    HOUR(NOW()), MIN(NOW()), SECOND(NOW())
+      YEAR(NOW()),MONTH(NOW()), DAY(NOW()),
+      HOUR(NOW()), MIN(NOW()), SECOND(NOW())
 ```
 return string type
 ```dtd
@@ -597,4 +597,72 @@ SELECT time_to_sec('09:00') --32400
 ```dtd
 SELECT time_to_sec('09:00') - time_to_sec('09:01') -- -60
 ```
-
+### IFNULL and COALESCE
+IFNULL: substitute the null value with something else.
+COALESCE: return the first non-null value
+```dtd
+USE sql_store;
+SELECT
+      order_id,
+      -- IFNULL(shipper_id, 'Not assigned') AS shipper
+      COALESCE(shipper_id, comments, 'Not assigned') AS shipper
+FROM orders
+```
+-- created the table including full name and phone number of customers
+-- Using CONCAT to combine fist name and last name
+-- Using IFNULL to set phone number from NULL to Unknown
+```dtd
+USE sql_store;
+SELECT
+      CONCAT(first_name, ' ', last_name) AS customer,
+      IFNULL(phone, 'Unknown') AS phone
+FROM customers
+```
+### the IF function
+Separate orders into two groups:
+group1 named 'Active', order_date is this year
+group2 named 'Archived', order_date is before this year
+method 1 - IF function:
+```dtd
+USE sql_store;
+SELECT
+	order_id,
+    order_date,
+    IF(
+          YEAR(order_date) = YEAR(NOW()), -- condition
+          'Active', -- condition is true
+          'Archived') AS category --condition is false
+FROM orders
+```
+Method 2: UNION
+```dtd
+USE sql_store;
+SELECT
+      order_id,
+      order_date,
+      'Active' AS type
+FROM orders
+WHERE YEAR(order_date) = 2019 
+UNION
+SELECT
+      order_id,
+      order_date,
+      'Archived' AS type
+FROM orders
+WHERE YEAR(order_date) < 2019 
+```
+Using COUNT with GROUP BY
+```dtd
+USE sql_store;
+SELECT
+	p.product_id,
+    p.name,
+    COUNT(*) AS orders,
+    IF(
+		COUNT(*) > 1,
+        'Many times',
+        'Once') AS frequency
+FROM products p
+JOIN order_items oi USING(product_id)
+GROUP BY p.product_id, p.name
+```
