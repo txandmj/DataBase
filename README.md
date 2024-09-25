@@ -537,3 +537,64 @@ NOTE: expression doesn't allow use column alias
 ### Subqueries in FROM
 The method of Subqueries in FROM only used for simple queries.
 Because this method make main query complicate.
+### Numeric function
+```dtd
+SELECT 
+  ROUND(5.8),
+  CEILING(5.2),
+  FLOOR(5.2),
+  ABS(-5.2)
+```
+### String functions
+```dtd
+SELECT LOWER('SKY') 
+        -- UPPER(str)
+        -- LTRIM(str)
+        -- RTRIM(str)
+        -- TRIM(str)
+        -- LEFT/RIGHT(str, num) return num characters of str
+        -- SUBSTRING(str, num1, num2) return substring start site is num1 and length is num2
+        -- LOCATE('N', 'Kindergarten') return 3
+        -- LOCATE('q', 'Kindergarten') return 0
+        -- LOCATE('garten', 'Kindergarten') return 7
+        -- LOCATE('garden', 'Kindergarten') return 0
+        -- REPLACE('Kindergarten', 'garten', 'garden) return Kindergarden
+
+```
+### Date Function
+RETURN int type
+```dtd
+SELECT NOW(), CURDATE(), CURTIME(), 
+	YEAR(NOW()),MONTH(NOW()), DAY(NOW()),
+    HOUR(NOW()), MIN(NOW()), SECOND(NOW())
+```
+return string type
+```dtd
+SELECT MONTHNAME(NOW()) --september
+```
+```dtd
+SELECT  EXTRACT(YEAR FROM NOW()) --2024
+```
+```dtd
+SELECT  DATE_FORMAT(NOW(), '%M %d, %Y') --September 23, 2024
+```
+```dtd
+SELECT  TIME_FORMAT(NOW(), '%H: %i %p') --10: 26 AM
+```
+### Calculating Dates and time
+```dtd
+SELECT  DATE_ADD(NOW(), INTERVAL 1 YEAR) --2025-09-23 10:28:26
+```
+```dtd
+SELECT  DATE_SUB(NOW(), INTERVAL 1 YEAR) --2023-09-23 10:30:06
+```
+```dtd
+SELECT  DATEDIFF('2019-01-01', '2020-02-01') -- -396
+```
+```dtd
+SELECT time_to_sec('09:00') --32400
+```
+```dtd
+SELECT time_to_sec('09:00') - time_to_sec('09:01') -- -60
+```
+
