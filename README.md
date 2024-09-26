@@ -626,12 +626,12 @@ method 1 - IF function:
 ```dtd
 USE sql_store;
 SELECT
-	order_id,
-    order_date,
-    IF(
-          YEAR(order_date) = YEAR(NOW()), -- condition
-          'Active', -- condition is true
-          'Archived') AS category --condition is false
+      order_id,
+      order_date,
+      IF(
+            YEAR(order_date) = YEAR(NOW()), -- condition
+            'Active', -- condition is true
+            'Archived') AS category --condition is false
 FROM orders
 ```
 Method 2: UNION
@@ -655,14 +655,74 @@ Using COUNT with GROUP BY
 ```dtd
 USE sql_store;
 SELECT
-	p.product_id,
-    p.name,
-    COUNT(*) AS orders,
-    IF(
-		COUNT(*) > 1,
-        'Many times',
-        'Once') AS frequency
+      p.product_id,
+      p.name,
+      COUNT(*) AS orders,
+      IF(
+          COUNT(*) > 1,
+          'Many times',
+          'Once') AS frequency
 FROM products p
 JOIN order_items oi USING(product_id)
 GROUP BY p.product_id, p.name
+```
+### the CASE operator
+```dtd
+USE sql_store;
+SELECT
+      CONCAT(first_name, ' ', last_name) AS customer,
+      points,
+      CASE
+          WHEN points > 3000 THEN 'Gold'
+          WHEN points >= 2000 THEN 'Silver'
+          ELSE 'Bronze'
+	END AS category
+FROM customers
+```
+### Creating Views
+```dtd
+CREATE VIEW clients_balance AS
+SELECT
+      c.client_id,
+      c.name,
+      SUM(i.invoice_total - i.payment_total) AS balance
+FROM clients c
+JOIN invoices i USING (client_id)
+GROUP BY c.client_id, c.name
+```
+### Altering or Dropping VIEW
+Method 1: DROP VIEW [view name] --Drop and recreate
+Method 2: CREATE OR REPLACE VIEW [view name]
+Method 3: save it to do source control
+### Updatable Views
+Updatable views don't include:
+- DISTINCT
+- Aggregate Functions(MIN, MAX, SUM...)
+- GROUP BY / HAVING
+- UNION
+-- created the updatable view:
+```dtd
+CREATE OR REPLACE VIEW invoices_with_balance AS
+SELECT
+	invoice_id,
+    number,
+    client_id,
+    invoice_total,
+    payment_total,
+    invoice_total - payment_total AS balance,
+    invoice_date,
+    due_date,
+    payment_date
+FROM invoices
+WHERE (invoice_total - payment_total) > 0 -- can't use alias name 'balance'
+```
+-- update the invoices_with_balance
+```dtd
+DELETE FROM invoices_with_balance
+WHERE invoice_id = 1
+```
+```dtd
+UPDATE invoices_with_balance
+SET due_date = DATE_ADD(due_date, INTERVAL 2 DAY)
+WHERE invoice_id = 2
 ```
