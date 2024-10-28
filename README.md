@@ -1,7 +1,7 @@
 # DataBase
 =======
 # DataBase
-- Data: 描述十五的符号记录（有语义）
+- Data: 描述事物的符号记录（有语义）
 - DataBase: 长期储存在计算机内，有组织的，可共享的大量数据的集合
 - DataBase Management System: 位于用户与操作系统直接的一层数据管理软件
 - DataBase System:由数据库，数据库管理系统（及其应用开发工具），应用程序和数据库管理员组成的存储，管理，处理和维护数据的系统
@@ -46,7 +46,87 @@
   - 投影：是从**列**的角度进行运算，但投影成功之后不仅取消了原关系中的某些列，还可能取消某些元组（避免重复行）
   - 连接：从两个关系的笛卡尔积中选取属性间满足一定条件的元组
   - 除： R ➗ S 同时从行和列的角度进行运算的
-
+## chapter 2
+### the SELECT statement
+Capitalize words for keywords, eg USE, SELECTE
+```declarative
+SELECT name, unit_price, unit_price * 1.1 AS new_price
+FROM customers 
+```
+### AND, OR, NOT operator
+```declarative
+SELECT *
+FROM Customers
+WHERE birth_data > '1990-01-01' OR (points > 1000 AND state = 'VA')
+-- AND has higher precedence
+```
+### IN operator
+```declarative
+SELECT *
+FROM Customers
+WHERE state NOT IN('VA', 'CA', 'TX')
+```
+### BETWEEN
+```declarative
+SELECT *
+FROM customers
+WHERE points BETWEEN 1000 AND 2000
+```
+### LIKE
+```declarative
+SELECT *
+FROM customers
+WHERE last_name LIKE 'b%' -- last name starts with b; '%b%' b in last name;'%b' b is the last char
+WHERE last_name LIKE 'b___y' --last name has 5 chars, starts with b, follow by 3 chars, and end with y
+-- % any number of characters
+-- _ single char
+```
+```declarative
+--Get the customers whose addresses contain TRAIL or AVENUE
+SELECT *
+FROM customers
+WHERE address LIKE '%trail%' OR
+    address LIKE '%AVENUE'
+```
+### REGEXP
+```declarative
+SELECT *
+FROM customers
+WHERE last_name REGEXP '[a-h]e'
+-- ^ beginning '^field' means last name starts with field
+-- $ end 'field$' means last name ends with field
+-- | logical or 'field|rose|nasy' last name contains field or rose or nasy
+-- [abcd]
+-- [a-f] means range a,b,c,d,e,f
+```
+```declarative
+-- get the customers whose
+-- first names are ELKA or AMBUR
+-- last names end with EY or ON
+--last names start with MY or contains SE
+-- last names contain B followed by R or U
+SELECT *
+FROM customers
+WHERE first_name REGEXP 'elka|ambur'
+WHERE last_name REGEXP 'ey$|on$'
+WHERE last_name REGEXP '^my|se'
+WHERE last_name REGEXP 'br|bu' == WHERE last_name REGEXP 'b[ru]'
+```
+### IS NULL 
+```declarative
+SELECT *
+FROM customers
+WHERE phone IS NULL -- return customers without phone
+WHERE phone IS NOT NULL --return customers with phone
+```
+### ORDER BY
+```declarative
+SELECT *
+FROM customers
+ORDER BY state DESC , first_name DESC
+```
+The orders of clauses matter
+SELECT - FROM - WHERE - ORDER BY - LIMIT
 ## Chapter 3 
 ### Inner Joins
 Join colums from multiple tables"
