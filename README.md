@@ -429,18 +429,18 @@ FROM invoices
 WHERE invoice_date between '2019-01-01' AND '2019-06-30'
 UNION
 SELECT
-'Second half of 2019' AS date_range,
-SUM(invoice_total) AS total_sales,
-SUM(payment_total) AS total_payments,
-SUM(invoice_total - payment_total) AS what_we_expect
+    'Second half of 2019' AS date_range,
+    SUM(invoice_total) AS total_sales,
+    SUM(payment_total) AS total_payments,
+    SUM(invoice_total - payment_total) AS what_we_expect
 FROM invoices
 WHERE invoice_date between '2019-07-01' AND '2019-12-31'
 UNION
 SELECT
-'Total' AS date_range,
-SUM(invoice_total) AS total_sales,
-SUM(payment_total) AS total_payments,
-SUM(invoice_total - payment_total) AS what_we_expect
+    'Total' AS date_range,
+    SUM(invoice_total) AS total_sales,
+    SUM(payment_total) AS total_payments,
+    SUM(invoice_total - payment_total) AS what_we_expect
 FROM invoices
 WHERE invoice_date between '2019-01-01' AND '2019-12-31'
 ```
@@ -806,3 +806,34 @@ UPDATE invoices_with_balance
 SET due_date = DATE_ADD(due_date, INTERVAL 2 DAY)
 WHERE invoice_id = 2
 ```
+## data models
+### conceptual: only represent entities and relationships
+entity relationship
+UML
+modelling tools: Microsoft Visio, draw.io, LucidCharts
+### logical: we almost know what structure and what table we need to store data
+add more details
+### physical
+open MySQL workbench -> file -> new model -> EER(enhance entity relationship) -> right click "mydb" -> edit schema (to rename it) -> add new diagram -> add new table -> set primary keys -> set foreign keys 
+singular - entity (eg student)
+plural - table name (students)
+column :
+first_name, VARCHAR(50): short length of string, using 50; for middle length, using 255
+NN: NON-NULL
+AI: automatic increment
+## Normalization
+### 1NF- first normal form
+Each cell should have a single value and we cannot have repeated columns 
+### 2NF -second normal form
+every table should describe one entity, and every column in that table should describe that entity
+### 3NF - third normal form
+a column in a table should not be derived from other columns
+### forward engineering
+database -> forward engineer ->
+### synchronizing a model
+if you change one table, you need update database
+database -> sychronize engineer
+### reverse engineering
+if you want change the database which doesn't have model
+before you do reverse engineering, make sure no model is openning. Otherwise, mySQL will add this database into that model
+database -> reverse engineer
