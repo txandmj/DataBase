@@ -904,7 +904,7 @@ CREATE TABLE orders
         ON DELETE NO ACTION
 );
 ```
-### altering primaty key
+### altering primary key
 ```
 ALTER TABLE order
     ADD PRIMARY KEY (order_id),
